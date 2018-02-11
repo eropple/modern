@@ -18,7 +18,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: Modern::Types::Strict::Int
+              type: Modern::Types::Strict::Int
             )
           ]
         )
@@ -43,7 +43,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: Modern::Types::Strict::Int
+              type: Modern::Types::Strict::Int
             )
           ]
         )
@@ -68,7 +68,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: Modern::Types::Strict::Hash.strict(
+              type: Modern::Types::Strict::Hash.strict(
                 a: Modern::Types::Strict::String,
                 b: Modern::Types::Coercible::Int
               )
@@ -96,7 +96,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: Modern::Types::Strict::Hash.strict(
+              type: Modern::Types::Strict::Hash.strict(
                 a: Modern::Types::Strict::String,
                 b: Modern::Types::Coercible::Int
               )
@@ -131,7 +131,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: test_struct
+              type: test_struct
             )
           ]
         )
@@ -156,7 +156,7 @@ shared_context "content test" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              schema: test_struct
+              type: test_struct
             )
           ]
         )
