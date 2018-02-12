@@ -45,6 +45,13 @@ module Modern
         def do_credential_fetch(_request)
           raise "#{self.class.name}#do_credential_fetch(request) must be implemented."
         end
+
+        def to_openapi3
+          {
+            name: name,
+            description: description
+          }
+        end
       end
 
       class ApiKey < Base
@@ -62,6 +69,13 @@ module Modern
 
         def do_credential_fetch(request)
           parameter.do_retrieve(request)
+        end
+
+        def to_openapi3
+          super.merge(
+            type: "api_key",
+            in: parameter.openapi3_in
+          )
         end
       end
 
@@ -86,6 +100,13 @@ module Modern
 
             match[2].strip if !match.nil? && match[1].casecmp(scheme).zero?
           end
+        end
+
+        def to_openapi3
+          super.merge(
+            type: "http",
+            scheme: scheme
+          )
         end
       end
     end

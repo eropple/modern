@@ -2,7 +2,7 @@
 
 require 'modern/app'
 
-shared_context "security test" do
+shared_context "security routes" do
   let(:http_bearer) do
     Modern::Descriptor::Route.new(
       id: "getHttpBearer",
@@ -12,6 +12,7 @@ shared_context "security test" do
       security: [
         Modern::Descriptor::Security::Http.new(
           name: "httpBearerFoo",
+          description: "a bearer token with the value of 'foo' is required.",
           scheme: "Bearer",
           validation: proc { |v| v == "foo" }
         )
@@ -168,6 +169,10 @@ shared_context "security test" do
         end
     )
   end
+end
+
+describe Modern::Descriptor::Security do
+  include_context "security routes"
 
   let(:descriptor) do
     Modern::Descriptor::Core.new(
@@ -196,12 +201,8 @@ shared_context "security test" do
     # Modern::App.new(descriptor, cfg, Modern::Services.new(base_logger: Ougai::Logger.new(StringIO.new)))
     Modern::App.new(descriptor, cfg)
   end
-end
 
-describe Modern::Descriptor::Security do
   context "basic validation" do
-    include_context "security test"
-
     context "http bearer" do
       it "returns 200 when the header validator succeeds" do
         header "Accept", "application/json"

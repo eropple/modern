@@ -36,6 +36,10 @@ module Modern
           end
         end
 
+        def openapi3_in
+          self.class.name.split("::").last.downcase
+        end
+
         def do_retrieve(_request, _route_captures)
           raise "#{self.class.name}#do_retrieve(request, route_captures) must be implemented."
         end

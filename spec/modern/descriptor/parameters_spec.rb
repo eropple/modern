@@ -2,7 +2,7 @@
 
 require 'modern/app'
 
-shared_context "parameter test" do
+shared_context "parameter routes" do
   let(:query_route) do
     Modern::Descriptor::Route.new(
       id: "getQuery",
@@ -169,6 +169,10 @@ shared_context "parameter test" do
         end
     )
   end
+end
+
+describe Modern::Descriptor::Parameters do
+  include_context "parameter routes"
 
   let(:descriptor) do
     Modern::Descriptor::Core.new(
@@ -194,12 +198,8 @@ shared_context "parameter test" do
   let(:app) do
     Modern::App.new(descriptor)
   end
-end
 
-describe Modern::Descriptor::Parameters do
   context "basic types of parameters" do
-    include_context "parameter test"
-
     it "parses a form-encoded query parameter" do
       header "Accept", "application/json"
       get "/query-form?a=5&b=something"
