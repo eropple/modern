@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 unless Object.constants.include? :RequestBodyTest
   module RequestBodyTest
@@ -629,4 +630,3 @@ shared_context "content routes" do
     )
   end
 end
-

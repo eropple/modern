@@ -50,11 +50,9 @@ describe Modern::DocGenerator::OpenAPI3 do
         http_bearer,
         http_multi,
         apikey_header,
-
         required_body_hash_route,
         required_body_struct_route,
         required_nested_struct_route,
-
         good_route_scalar,
         good_route_hash,
         good_route_struct
@@ -90,8 +88,6 @@ describe Modern::DocGenerator::OpenAPI3 do
       json = JSON.pretty_generate(hash)
       yaml = YAML.dump(JSON.parse(json))
       doc = Openapi3Parser.load(yaml)
-
-      require 'pry'; binding.pry
 
       expect(doc.errors.errors).to eq([])
     end

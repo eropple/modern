@@ -83,55 +83,55 @@ module Modern
 
           if !registered_type.nil?
             registered_type
-          else
-            if entry.is_a?(Dry::Types::Sum::Constrained)
-              if entry.left.type.primitive == NilClass
-                # it's a nullable field
-                _build_schema_value(ret, name_to_class, entry.right).merge(nullable: true)
-              else
-                {
-                  anyOf: _flatten_any_of([
+          elsif entry.is_a?(Dry::Types::Sum::Constrained)
+            if entry.left.type.primitive == NilClass
+              # it's a nullable field
+              _build_schema_value(ret, name_to_class, entry.right).merge(nullable: true)
+            else
+              {
+                anyOf: _flatten_any_of(
+                  [
                     _build_schema_value(ret, name_to_class, entry.left),
                     _build_schema_value(ret, name_to_class, entry.right)
-                  ])
-                }
-              end
-            elsif entry.is_a?(Dry::Types::Constrained)
-              # TODO: dig deeper into the actual behavior of Constrained (dry-logic)
-              #       This is probably a can of worms. More:
-              #       http://dry-rb.org/gems/dry-types/constraints/
-
-              _build_schema_value(ret, name_to_class, entry.type)
-            elsif entry.is_a?(Dry::Types::Default)
-              # this just unwraps the default value
-              _build_schema_value(ret, name_to_class, entry.type)
-            elsif entry.is_a?(Dry::Types::Definition)
-              primitive = entry.primitive
-
-              if primitive.ancestors.include?(Dry::Struct)
-                # TODO: make sure I'm understanding this correctly
-                #       It feels weird to have to oneOf a $ref, but I can't figure out a
-                #       syntax that doesn't require it.
-                primitive_name = _build_struct(ret, name_to_class, primitive)
-
-                {
-                  oneOf: [
-                    _struct_ref(primitive)
                   ]
-                }
-              elsif primitive.ancestors.include?(Hash)
-                _build_object_from_schema(ret, name_to_class, entry.member_types)
-              elsif primitive.ancestors.include?(Array)
-                {
-                  type: "array",
-                  items: _build_schema_value(ret, name_to_class, entry.member)
-                }
-              else
-                raise "unrecognized primitive definition '#{primitive.name}'; probably needs a literal."
-              end
-            else
-              raise "Unrecognized schema class: #{entry.class.name}: #{entry.inspect}"
+                )
+              }
             end
+          elsif entry.is_a?(Dry::Types::Constrained)
+            # TODO: dig deeper into the actual behavior of Constrained (dry-logic)
+            #       This is probably a can of worms. More:
+            #       http://dry-rb.org/gems/dry-types/constraints/
+
+            _build_schema_value(ret, name_to_class, entry.type)
+          elsif entry.is_a?(Dry::Types::Default)
+            # this just unwraps the default value
+            _build_schema_value(ret, name_to_class, entry.type)
+          elsif entry.is_a?(Dry::Types::Definition)
+            primitive = entry.primitive
+
+            if primitive.ancestors.include?(Dry::Struct)
+              # TODO: make sure I'm understanding this correctly
+              #       It feels weird to have to oneOf a $ref, but I can't figure out a
+              #       syntax that doesn't require it.
+              _build_struct(ret, name_to_class, primitive)
+
+              {
+                oneOf: [
+                  _struct_ref(primitive)
+                ]
+              }
+            elsif primitive.ancestors.include?(Hash)
+              _build_object_from_schema(ret, name_to_class, entry.member_types)
+            elsif primitive.ancestors.include?(Array)
+              {
+                type: "array",
+                items: _build_schema_value(ret, name_to_class, entry.member)
+              }
+            else
+              raise "unrecognized primitive definition '#{primitive.name}'; probably needs a literal."
+            end
+          else
+            raise "Unrecognized schema class: #{entry.class.name}: #{entry.inspect}"
           end
         end
 
