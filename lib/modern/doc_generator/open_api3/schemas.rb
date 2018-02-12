@@ -90,10 +90,10 @@ module Modern
                 _build_schema_value(ret, name_to_class, entry.right).merge(nullable: true)
               else
                 {
-                  anyOf: [
+                  anyOf: _flatten_any_of([
                     _build_schema_value(ret, name_to_class, entry.left),
                     _build_schema_value(ret, name_to_class, entry.right)
-                  ]
+                  ])
                 }
               end
             elsif entry.is_a?(Dry::Types::Constrained)
@@ -133,6 +133,37 @@ module Modern
               raise "Unrecognized schema class: #{entry.class.name}: #{entry.inspect}"
             end
           end
+        end
+
+        def _flatten_any_of(typehash_array)
+          # This is hacky, but it removes the incidence of something like this:
+          #
+          # :exsub => {
+          #   :anyOf => [
+          #       [0] {
+          #           :oneOf => [
+          #               [0] {
+          #                   :$ref => "#/components/schemas/ExclusiveSubA"
+          #               }
+          #           ]
+          #       },
+          #       [1] {
+          #           :oneOf => [
+          #               [0] {
+          #                   :$ref => "#/components/schemas/ExclusiveSubB"
+          #               }
+          #           ]
+          #       }
+          #   ]
+          # }
+
+          typehash_array.map do |typehash|
+            if typehash.length == 1 && typehash.first.first == :oneOf
+              typehash.first.last
+            else
+              typehash
+            end
+          end.flatten
         end
       end
     end
