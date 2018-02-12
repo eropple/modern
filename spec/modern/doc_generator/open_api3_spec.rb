@@ -37,6 +37,7 @@ describe Modern::DocGenerator::OpenAPI3 do
   include_context "parameter routes"
   include_context "security routes"
   include_context "request body routes"
+  include_context "content routes"
 
   let(:descriptor) do
     Modern::Descriptor::Core.new(
@@ -51,7 +52,9 @@ describe Modern::DocGenerator::OpenAPI3 do
 
         required_body_hash_route,
         required_body_struct_route,
-        required_nested_struct_route
+        required_nested_struct_route,
+
+        good_route_struct
       ]
     )
   end

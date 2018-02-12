@@ -33,6 +33,15 @@ unless Object.constants.include? :RequestBodyTest
   end
 end
 
+unless Object.constants.include? :ContentTest
+  module ContentTest
+    class RespBody < Modern::Struct
+      attribute :a, Modern::Types::Strict::String
+      attribute :b, Modern::Types::Coercible::Int
+    end
+  end
+end
+
 shared_context "request body routes" do
   let(:required_body_hash_route) do
     Modern::Descriptor::Route.new(
@@ -570,13 +579,6 @@ shared_context "content routes" do
     )
   end
 
-  let(:test_struct) do
-    Class.new(Modern::Struct) do
-      attribute :a, Modern::Types::Strict::String
-      attribute :b, Modern::Types::Coercible::Int
-    end
-  end
-
   let(:good_route_struct) do
     Modern::Descriptor::Route.new(
       id: "getGoodRouteStruct",
@@ -590,7 +592,7 @@ shared_context "content routes" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              type: test_struct
+              type: ContentTest::RespBody
             )
           ]
         )
@@ -615,7 +617,7 @@ shared_context "content routes" do
           content: [
             Modern::Descriptor::Content.new(
               media_type: "application/json",
-              type: test_struct
+              type: ContentTest::RespBody
             )
           ]
         )
