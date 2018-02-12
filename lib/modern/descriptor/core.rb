@@ -26,6 +26,7 @@ module Modern
 
       attr_reader :securities_by_name
       attr_reader :root_schemas
+      attr_reader :routes_by_path
 
       def initialize(fields)
         super
@@ -47,6 +48,13 @@ module Modern
               route.responses.map(&:content).flatten.map(&:type)
             ]
           end.flatten.compact.uniq.freeze
+
+        @routes_by_path = {}
+        routes.each do |route|
+          @routes_by_path[route.path] ||= {}
+          @routes_by_path[route.path][route.http_method] = route
+        end
+        @routes_by_path.freeze
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative './schema_default_types'
 
 module Modern
@@ -26,61 +28,57 @@ module Modern
 
         # Only Dry::Struct
         def _struct_schemas(descriptor)
-          name_to_class = {}
-          class_to_name = {}
-
           ret = {}
+          name_to_class = {}
 
           descriptor.root_schemas \
                     .select { |type_or_structclass| type_or_structclass.is_a?(Class) } \
                     .each do |structclass|
-            _build_struct(ret, name_to_class, class_to_name, structclass)
+            _build_struct(ret, name_to_class, structclass)
           end
 
           ret
         end
 
-        def _build_struct(ret, name_to_class, class_to_name, structclass)
+        def _build_struct(ret, name_to_class, structclass)
+          # TODO: allow overriding the name of the struct in #/components/schemas
+          #       This is actually trickier than it looks, because we need to also
+          #       make it referenceable in responses/contents. It probably means an
+          #       indirect mapping of classes to names and back again.
+
           raise "not actually a Dry::Struct class" \
             unless structclass.ancestors.include?(Dry::Struct)
 
-          name =
-            if structclass.respond_to?(:schema_name)
-              structclass.schema_name
-            else
-              structclass.name.split("::").last
-            end
+          name = structclass.name.split("::").last
 
           if name_to_class[name] == structclass
             name
           else
             if !name_to_class[name].nil?
               raise "Duplicate schema name: '#{name}'. Only one class, regardless " \
-                    "of namespace, can be called this. To override this value, " \
-                    "implement `#{structclass.name}.schema_name (a `self.` method).`"
+                    "of namespace, can be called this."
             end
 
-            obj = _build_object_from_schema(ret, name_to_class, class_to_name, structclass.schema)
-
-            name_to_class[name] = structclass
-            class_to_name[structclass] = name
-
-            ret[name] = obj
+            ret[name] = _build_object_from_schema(ret, name_to_class, structclass.schema)
           end
 
           name # necessary for recursive calls in _build_schema_value
         end
 
-        def _build_object_from_schema(ret, name_to_class, class_to_name, dt_schema)
+        def _build_object_from_schema(ret, name_to_class, dt_schema)
           {
             type: "object",
             properties: dt_schema.map do |k, v|
-              [k, _build_schema_value(ret, name_to_class, class_to_name, v)]
+              [k, _build_schema_value(ret, name_to_class, v)]
             end.to_h
           }
         end
 
-        def _build_schema_value(ret, name_to_class, class_to_name, entry)
+        def _struct_ref(structclass)
+          { "$ref": "#/components/schemas/#{structclass.name.split('::').last}" }
+        end
+
+        def _build_schema_value(ret, name_to_class, entry)
           registered_type = @type_registry[entry]
 
           if !registered_type.nil?
@@ -89,12 +87,12 @@ module Modern
             if entry.is_a?(Dry::Types::Sum::Constrained)
               if entry.left.type.primitive == NilClass
                 # it's a nullable field
-                _build_schema_value(ret, name_to_class, class_to_name, entry.right).merge(nullable: true)
+                _build_schema_value(ret, name_to_class, entry.right).merge(nullable: true)
               else
                 {
                   anyOf: [
-                    _build_schema_value(ret, name_to_class, class_to_name, entry.left),
-                    _build_schema_value(ret, name_to_class, class_to_name, entry.right)
+                    _build_schema_value(ret, name_to_class, entry.left),
+                    _build_schema_value(ret, name_to_class, entry.right)
                   ]
                 }
               end
@@ -103,10 +101,10 @@ module Modern
               #       This is probably a can of worms. More:
               #       http://dry-rb.org/gems/dry-types/constraints/
 
-              _build_schema_value(ret, name_to_class, class_to_name, entry.type)
+              _build_schema_value(ret, name_to_class, entry.type)
             elsif entry.is_a?(Dry::Types::Default)
               # this just unwraps the default value
-              _build_schema_value(ret, name_to_class, class_to_name, entry.type)
+              _build_schema_value(ret, name_to_class, entry.type)
             elsif entry.is_a?(Dry::Types::Definition)
               primitive = entry.primitive
 
@@ -114,19 +112,19 @@ module Modern
                 # TODO: make sure I'm understanding this correctly
                 #       It feels weird to have to oneOf a $ref, but I can't figure out a
                 #       syntax that doesn't require it.
-                primitive_name = _build_struct(ret, name_to_class, class_to_name, primitive)
+                primitive_name = _build_struct(ret, name_to_class, primitive)
 
                 {
                   oneOf: [
-                    { "$ref": "#/components/schemas/#{primitive_name}" }
+                    _struct_ref(primitive)
                   ]
                 }
               elsif primitive.ancestors.include?(Hash)
-                _build_object_from_schema(ret, name_to_class, class_to_name, entry.member_types)
+                _build_object_from_schema(ret, name_to_class, entry.member_types)
               elsif primitive.ancestors.include?(Array)
                 {
                   type: "array",
-                  items: _build_schema_value(ret, name_to_class, class_to_name, entry.member)
+                  items: _build_schema_value(ret, name_to_class, entry.member)
                 }
               else
                 raise "unrecognized primitive definition '#{primitive.name}'; probably needs a literal."

@@ -55,6 +55,8 @@ describe Modern::DocGenerator::OpenAPI3 do
         required_body_struct_route,
         required_nested_struct_route,
 
+        good_route_scalar,
+        good_route_hash,
         good_route_struct
       ]
     )

@@ -48,6 +48,7 @@ module Modern
           {
             name: friendly_name,
             in: openapi3_in,
+            required: !is_api_key ? required : nil,
             description: !is_api_key ? description : nil,
             deprecated: !is_api_key ? deprecated : nil
           }.compact

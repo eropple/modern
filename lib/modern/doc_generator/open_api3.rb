@@ -11,6 +11,7 @@ module Modern
   module DocGenerator
     class OpenAPI3
       include Schemas
+      include Paths
 
       # TODO: this is pretty inflexible. Eventually, consumers may want to
       #       subclass Route, Content, etc., for their own use cases, and that
@@ -41,7 +42,7 @@ module Modern
           openapi: OPENAPI_VERSION,
 
           info: _info(descriptor.info),
-          paths: {},
+          paths: _paths(descriptor),
           components: _components(descriptor)
         }
 
