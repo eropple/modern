@@ -5,9 +5,7 @@ require 'openapi3_parser'
 require 'modern/descriptor'
 require 'modern/doc_generator/open_api3'
 
-require_relative '../descriptor/parameters_spec'
-require_relative '../descriptor/security_spec'
-require_relative '../descriptor/request_body_spec'
+require_relative '../descriptor/routes'
 
 shared_context "openapi3 infos" do
   let(:minimal_info) do
@@ -47,11 +45,11 @@ describe Modern::DocGenerator::OpenAPI3 do
         version: "1.0.0"
       ),
       routes: [
-        # path_route,
-        # http_bearer,
-        # apikey_header,
+        path_route,
+        http_bearer,
+        apikey_header,
 
-        # required_body_hash_route,
+        required_body_hash_route,
         required_body_struct_route,
         required_nested_struct_route
       ]
