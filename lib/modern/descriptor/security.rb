@@ -48,7 +48,6 @@ module Modern
 
         def to_openapi3
           {
-            name: name,
             description: description
           }
         end
@@ -72,10 +71,7 @@ module Modern
         end
 
         def to_openapi3
-          super.merge(
-            type: "api_key",
-            in: parameter.openapi3_in
-          )
+          parameter.to_openapi3(true).merge(type: "apiKey")
         end
       end
 

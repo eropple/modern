@@ -4,7 +4,7 @@ module Modern
       module Schemas
         def _security_schemes(descriptor)
           descriptor.securities_by_name.map do |name, security|
-            [name, security.to_openapi3]
+            [name, security.to_openapi3.compact]
           end.to_h
         end
       end

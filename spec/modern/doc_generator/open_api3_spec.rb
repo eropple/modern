@@ -48,6 +48,7 @@ describe Modern::DocGenerator::OpenAPI3 do
       routes: [
         path_route,
         http_bearer,
+        http_multi,
         apikey_header,
 
         required_body_hash_route,
